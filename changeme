@@ -7,11 +7,22 @@
 #
 
 HOSTNAME=`hostname`
-MSG="$HOSTNAME UPS $1 battery needs changing NOW."
-#
-(
-   echo "$MSG"
-   echo " "
-   /sbin/apcaccess status
-) | $APCUPSD_MAIL -s "$MSG" $SYSADMIN
+NOTIFY_HOST="ntfy.sh"
+NOTIFY_TOPIC=your-own-topic
+
+haveCurl=$(which curl)
+
+if [ $? -ne 0 ]; then
+  echo "Curl is not installed or not found in path, please install curl."
+  exit 1
+fi
+
+curl \
+  -s \
+  -o /dev/null \
+  -H "Title: $HOSTNAME UPS $1 Battery Needs Replaced" \
+  -H "Priority: urgent" \
+  -H "Tags: ups" \
+  -d "$HOSTNAME UPS $1 battery requires replacement!" $NOTIFY_HOST/$NOTIFY_TOPIC
+
 exit 0

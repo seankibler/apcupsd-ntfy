@@ -7,11 +7,22 @@
 #
 
 HOSTNAME=`hostname`
-MSG="$HOSTNAME UPS $1 Power has returned"
-#
-(
-   echo "$MSG"
-   echo " "
-   /sbin/apcaccess status
-) | $APCUPSD_MAIL -s "$MSG" $SYSADMIN
+NOTIFY_HOST="ntfy.sh"
+NOTIFY_TOPIC=your-own-topic
+
+haveCurl=$(which curl)
+
+if [ $? -ne 0 ]; then
+  echo "Curl is not installed or not found in path, please install curl."
+  exit 1
+fi
+
+curl \
+  -s \
+  -o /dev/null \
+  -H "Title: $HOSTNAME UPS $1 Power Restored" \
+  -H "Priority: default" \
+  -H "Tags: ups" \
+  -d "$HOSTNAME UPS $1 has switched back to line power" $NOTIFY_HOST/$NOTIFY_TOPIC
+
 exit 0
