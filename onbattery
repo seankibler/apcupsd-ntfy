@@ -22,7 +22,7 @@ curl \
   -o /dev/null \
   -H "Title: $HOSTNAME UPS $1 Power Failure" \
   -H "Priority: high" \
-  -H "Tags: ups" \
+  -H "Tags: ups,battery" \
   -d "$HOSTNAME UPS $1 has switched to battery power" $NOTIFY_HOST/$NOTIFY_TOPIC
 
 exit 0

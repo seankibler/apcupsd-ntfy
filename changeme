@@ -22,7 +22,7 @@ curl \
   -o /dev/null \
   -H "Title: $HOSTNAME UPS $1 Battery Needs Replaced" \
   -H "Priority: urgent" \
-  -H "Tags: ups" \
+  -H "Tags: ups,skull,battery" \
   -d "$HOSTNAME UPS $1 battery requires replacement!" $NOTIFY_HOST/$NOTIFY_TOPIC
 
 exit 0

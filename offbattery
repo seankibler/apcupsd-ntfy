@@ -22,7 +22,7 @@ curl \
   -o /dev/null \
   -H "Title: $HOSTNAME UPS $1 Power Restored" \
   -H "Priority: default" \
-  -H "Tags: ups" \
+  -H "Tags: ups,electric_plug" \
   -d "$HOSTNAME UPS $1 has switched back to line power" $NOTIFY_HOST/$NOTIFY_TOPIC
 
 exit 0
