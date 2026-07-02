@@ -20,6 +20,8 @@ fi
 curl \
   -s \
   -o /dev/null \
+  --retry 5 \
+  --max-time 3 \
   -H "Title: $HOSTNAME UPS $1 Power Restored" \
   -H "Priority: default" \
   -H "Tags: ups,electric_plug" \

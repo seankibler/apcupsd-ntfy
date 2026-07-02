@@ -20,6 +20,8 @@ fi
 curl \
   -s \
   -o /dev/null \
+  --retry 5 \
+  --max-time 3 \
   -H "Title: $HOSTNAME UPS $1 Battery Needs Replaced" \
   -H "Priority: urgent" \
   -H "Tags: ups,skull,battery" \
