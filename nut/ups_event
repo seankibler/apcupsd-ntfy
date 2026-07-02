@@ -1,0 +1,113 @@
+#!/usr/bin/env bash
+
+# Event Type is set in $NOTIFYTYPE
+# EVENT TYPES (see /etc/nut/upsmon.conf)
+#
+# ONLINE   : UPS is back online
+# ONBATT   : UPS is on battery
+# LOWBATT  : UPS has a low battery (if also on battery, it's "critical")
+# FSD      : UPS is being shutdown by the primary (FSD = "Forced Shutdown")
+# COMMOK   : Communications established with the UPS
+# COMMBAD  : Communications lost to the UPS
+# SHUTDOWN : The system is being shutdown
+# REPLBATT : The UPS battery is bad and needs to be replaced
+# NOCOMM   : A UPS is unavailable (can't be contacted for monitoring)
+# NOPARENT : The process that shuts down the system has died (shutdown impossible)
+
+NOTIFY_MESSAGE=$1
+NTFY_TOPIC="kibler-ups-alerts"
+NTFY_HOST="ntfy.sh"
+HOSTNAME=`hostname`
+
+function unknown_event {
+  echo "Encountered an unexpected event: \"$NOTIFYTYPE\""
+}
+
+# $1 = Priority id or string [min,low,default,high,max] default is default
+#   1 - min
+#   2 - low
+#   3 - default
+#   4 - high
+#   5 - urgent
+# $2 = Tags - comma separated strings added to default "ups"
+function ntfy {
+  PRIORITY=${1:-3}
+  TAGS="ups,${2}"
+
+  echo "Sending notification for event = $NOTIFYTYPE to $NTFY_HOST/$NTFY_TOPIC with priority = $PRIORITY and tags = $TAGS"
+  curl \
+    -s \
+    -o /dev/null \
+    --retry 5 \
+    --max-time 3 \
+    -H "Title: $HOSTNAME $NOTIFY_MESSAGE" \
+    -H "Priority: $PRIORITY" \
+    -H "Tags: $TAGS" \
+    -d "$NOTIFY_MESSAGE" \
+    $NTFY_HOST/$NTFY_TOPIC
+}
+
+function on_line {
+  ntfy "3" "electric_plug"
+}
+
+function on_battery {
+  ntfy "4" "battery"
+}
+
+function low_battery {
+  ntfy "5" "warning,battery"
+}
+
+function forced_shutdown {
+  ntfy "5" "warning"
+}
+
+function shutdown {
+  ntfy "5" "warning"
+}
+
+function replace_battery {
+  ntfy "5" "skull,battery"
+}
+
+function noop {
+  echo "Received event $NOTIFYTYPE" | logger -t nut-monitor
+}
+
+case $NOTIFYTYPE in
+  ONLINE)
+    on_line
+    ;;
+  ONBATT)
+    on_battery
+    ;;
+  LOWBATT)
+    low_battery
+    ;;
+  FSD)
+    forced_shutdown
+    ;;
+  COMMOK)
+    noop
+    ;;
+  COMMBAD)
+    noop
+    ;;
+  SHUTDOWN)
+    shutdown
+    ;;
+  REPLBATT)
+    replace_battery
+    ;;
+  NOCOMM)
+    noop
+    ;;
+  NOPARENT)
+    noop
+    ;;
+  *)
+    unknown_event
+    ;;
+esac
+
